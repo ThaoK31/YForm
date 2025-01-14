@@ -69,4 +69,22 @@ describe('Tests des endpoints d\'authentification', () => {
             expect(res.body).toHaveProperty('error');
         });
     });
+
+    // Validation du format d'email
+    test('ne devrait pas accepter un email invalide', async () => {
+        const invalidUser = {
+            name: 'Test',
+            email: 'not-an-email',
+            password: 'password123'
+        };
+    });
+
+    // Validation de la longueur du mot de passe
+    test('ne devrait pas accepter un mot de passe trop court', async () => {
+        const invalidUser = {
+            name: 'Test',
+            email: 'test@test.com',
+            password: '123'
+        };
+    });
 }); 

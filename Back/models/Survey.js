@@ -31,8 +31,5 @@ const surveySchema = new mongoose.Schema({
     created_at: { type: Date, default: Date.now }, 
 });
 
-// Ajouter un index pour améliorer les performances
-surveySchema.index({ name: 1 }, { unique: true });
-
 const Survey = mongoose.model("Survey", surveySchema);
 export default Survey; 

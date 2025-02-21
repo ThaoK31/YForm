@@ -1,0 +1,12 @@
+# Backend specific logs
+logs/
+combined.log
+error.log
+
+# Backend build
+dist/server/
+dist/api/
+
+# Test specific
+coverage-e2e/
+.nyc_output/ 

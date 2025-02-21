@@ -25,7 +25,7 @@ const questionSchema = new mongoose.Schema({
 });
 
 const surveySchema = new mongoose.Schema({
-    name: { type: String, unique: true, required: true },
+    name: { type: String, required: true },
     creator: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // Référence vers l'utilisateur créateur
     questions: [questionSchema],
     created_at: { type: Date, default: Date.now }, 

@@ -12,17 +12,24 @@ const responseSchema = new mongoose.Schema({
         required: true 
     },
     answers: [{
-        question_id: { 
-            type: mongoose.Schema.Types.ObjectId, 
-            required: true 
+        question_id: {
+            type: mongoose.Schema.Types.ObjectId,
+            required: true
         },
-        answer: mongoose.Schema.Types.Mixed // Peut être une chaîne de caractères ou un tableau pour les QCM
+        value: {
+            type: String,
+            required: true,
+            trim: true
+        }
     }],
-    submitted_at: { 
+    created_at: { 
         type: Date, 
         default: Date.now 
     }
 });
+
+// Vérifier que l'utilisateur n'a pas déjà répondu au sondage
+responseSchema.index({ survey_id: 1, user_id: 1 }, { unique: true });
 
 const Response = mongoose.model("Response", responseSchema);
 export default Response; 

@@ -88,3 +88,22 @@ export const getUserResponses = async (token: string): Promise<ApiResponse<RawRe
 
     return handleApiResponse<RawResponseData[]>(response);
 };
+
+export const deleteResponse = async (token: string, response_id: string): Promise<ApiResponse<{ message: string }>> => {
+    if (!response_id) {
+        return {
+            error: 'ID de réponse manquant',
+            status: 400
+        };
+    }
+
+    const response = await fetch(`${API_URL}/api/responses/${response_id}`, {
+        method: 'DELETE',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+        },
+        credentials: 'include',
+    });
+
+    return handleApiResponse<{ message: string }>(response);
+};

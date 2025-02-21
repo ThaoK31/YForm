@@ -35,10 +35,22 @@ export const createResponse = async ({ survey_id, user_id, answers }) => {
     // Vérifier si l'utilisateur a déjà répondu
     const existingResponse = await Response.findOne({ survey_id, user_id });
     if (existingResponse) {
-        throw new ApiError(409, 'Réponse déjà soumise');
+        // Mettre à jour la réponse existante
+        existingResponse.answers = answers;
+        await existingResponse.save();
+        
+        return Response.findById(existingResponse._id)
+            .populate({
+                path: 'survey_id',
+                populate: { 
+                    path: 'creator',
+                    select: 'name email'
+                }
+            })
+            .populate('user_id', 'name email');
     }
 
-    // Créer la réponse
+    // Créer une nouvelle réponse
     const response = await Response.create({
         survey_id,
         user_id,
@@ -84,28 +96,49 @@ export const findResponseById = async (response_id, user_id) => {
 };
 
 export const findSurveyResponses = async (survey_id, user_id) => {
-    // Vérifier que le sondage existe et que l'utilisateur est le créateur
+    // Vérifier que le sondage existe
     const survey = await Survey.findById(survey_id).populate('creator');
     if (!survey) {
         throw new ApiError(404, 'Sondage non trouvé');
     }
 
-    // Vérifier que l'utilisateur est le créateur du sondage
-    if (survey.creator._id.toString() !== user_id.toString()) {
+    // Vérifier si l'utilisateur est le créateur du sondage
+    const isCreator = survey.creator._id.toString() === user_id.toString();
+
+    // Si c'est le créateur, retourner toutes les réponses
+    if (isCreator) {
+        return Response.find({ survey_id })
+            .populate('user_id', 'name email')
+            .populate({
+                path: 'survey_id',
+                populate: { 
+                    path: 'creator',
+                    select: 'name email'
+                }
+            })
+            .sort({ createdAt: -1 });
+    }
+
+    // Si ce n'est pas le créateur, vérifier s'il a répondu et retourner uniquement sa réponse
+    const userResponse = await Response.findOne({ 
+        survey_id, 
+        user_id 
+    })
+    .populate('user_id', 'name email')
+    .populate({
+        path: 'survey_id',
+        populate: { 
+            path: 'creator',
+            select: 'name email'
+        }
+    });
+
+    if (!userResponse) {
         throw new ApiError(403, 'Non autorisé');
     }
 
-    // Retourner toutes les réponses pour ce sondage
-    return Response.find({ survey_id })
-        .populate('user_id', 'name email')
-        .populate({
-            path: 'survey_id',
-            populate: { 
-                path: 'creator',
-                select: 'name email'
-            }
-        })
-        .sort({ createdAt: -1 });
+    // Retourner la réponse dans un tableau pour maintenir la cohérence du format
+    return [userResponse];
 };
 
 export const findUserResponses = async (user_id) => {
@@ -119,4 +152,26 @@ export const findUserResponses = async (user_id) => {
         })
         .populate('user_id', 'name email')
         .sort({ createdAt: -1 });
+};
+
+export const deleteResponseById = async (response_id, user_id) => {
+    const response = await Response.findById(response_id)
+        .populate({
+            path: 'survey_id',
+            populate: { 
+                path: 'creator',
+                select: 'name email'
+            }
+        });
+
+    if (!response) {
+        throw new ApiError(404, 'Réponse non trouvée');
+    }
+
+    // Vérifier que l'utilisateur est le créateur de la réponse
+    if (response.user_id.toString() !== user_id.toString()) {
+        throw new ApiError(403, 'Non autorisé à supprimer cette réponse');
+    }
+
+    await Response.findByIdAndDelete(response_id);
 }; 

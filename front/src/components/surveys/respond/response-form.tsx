@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { toast } from "@/hooks/use-toast"
 import { submitResponse } from "@/lib/api/responses"
-import { SurveyResponse } from "@/lib/types/api"
+import { SurveyResponse, EnrichedResponseData } from "@/lib/types/api"
 import { User } from "@/lib/types/user"
 import { useRouter } from "next/navigation"
 import Cookies from "js-cookie"
@@ -16,12 +16,24 @@ import Cookies from "js-cookie"
 interface ResponseFormProps {
   survey: SurveyResponse
   user: User | null
+  existingResponse?: EnrichedResponseData | null
 }
 
-export function ResponseForm({ survey, user }: ResponseFormProps) {
+export function ResponseForm({ survey, user, existingResponse }: ResponseFormProps) {
   const router = useRouter()
   const [answers, setAnswers] = useState<Record<string, string>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  // Charger les réponses existantes si on est en mode modification
+  useEffect(() => {
+    if (existingResponse) {
+      const initialAnswers: Record<string, string> = {}
+      existingResponse.answers.forEach(answer => {
+        initialAnswers[answer.question._id] = answer.value
+      })
+      setAnswers(initialAnswers)
+    }
+  }, [existingResponse])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -67,6 +79,7 @@ export function ResponseForm({ survey, user }: ResponseFormProps) {
         value: answers[question._id],
       }))
 
+      // Utiliser toujours submitResponse, que ce soit pour une création ou une modification
       const result = await submitResponse(token, {
         survey_id: survey._id,
         answers: formattedAnswers,
@@ -83,10 +96,12 @@ export function ResponseForm({ survey, user }: ResponseFormProps) {
 
       toast({
         title: "Succès",
-        description: "Votre réponse a été enregistrée",
+        description: existingResponse 
+          ? "Votre réponse a été mise à jour"
+          : "Votre réponse a été enregistrée",
       })
 
-      router.push("/dashboard")
+      router.push("/responses")
     } catch (error) {
       toast({
         title: "Erreur",
@@ -151,7 +166,7 @@ export function ResponseForm({ survey, user }: ResponseFormProps) {
         </div>
       ))}
       <Button type="submit" disabled={isSubmitting}>
-        {isSubmitting ? "Envoi en cours..." : "Envoyer"}
+        {isSubmitting ? "Envoi en cours..." : existingResponse ? "Mettre à jour" : "Envoyer"}
       </Button>
     </form>
   )

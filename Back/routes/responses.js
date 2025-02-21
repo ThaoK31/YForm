@@ -1,5 +1,5 @@
 import express from "express";
-import { submitResponse, getResponseById, getSurveyResponses, getUserResponses } from "../controllers/responseController.js";
+import { submitResponse, getResponseById, getSurveyResponses, getUserResponses, deleteResponse } from "../controllers/responseController.js";
 import auth from "../middleware/auth.js";
 
 const router = express.Router();
@@ -15,5 +15,8 @@ router.get("/user", auth, getUserResponses);
 
 // Récupérer une réponse spécifique (protégé)
 router.get("/:response_id", auth, getResponseById);
+
+// Supprimer une réponse (protégé, uniquement pour le créateur de la réponse)
+router.delete("/:response_id", auth, deleteResponse);
 
 export default router; 

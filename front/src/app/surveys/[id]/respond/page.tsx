@@ -1,36 +1,39 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useParams } from "next/navigation"
+import { useParams, useSearchParams } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { getSurveyById } from "@/lib/api/survey"
+import { getResponseById } from "@/lib/api/responses"
 import { useAuth } from "@/hooks/use-auth"
 import { toast } from "@/hooks/use-toast"
-import { SurveyResponse } from "@/lib/types/api"
+import { SurveyResponse, EnrichedResponseData } from "@/lib/types/api"
 import { ResponseForm } from "@/components/surveys/respond/response-form"
+import Cookies from "js-cookie"
 
 export default function RespondPage() {
   const params = useParams()
+  const searchParams = useSearchParams()
   const { user } = useAuth()
   const [survey, setSurvey] = useState<SurveyResponse | null>(null)
+  const [existingResponse, setExistingResponse] = useState<EnrichedResponseData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    const fetchSurvey = async () => {
+    const fetchData = async () => {
       try {
-        console.log("ID du sondage :", params.id)
-        const response = await getSurveyById(params.id as string)
-        console.log("Réponse de l'API :", response)
-        if (response.error) {
+        // Récupérer le sondage
+        const surveyResponse = await getSurveyById(params.id as string)
+        if (surveyResponse.error) {
           toast({
             title: "Erreur",
-            description: response.error,
+            description: surveyResponse.error,
             variant: "destructive",
           })
           return
         }
         
-        if (!response.data) {
+        if (!surveyResponse.data) {
           toast({
             title: "Erreur",
             description: "Impossible de charger le sondage",
@@ -39,13 +42,58 @@ export default function RespondPage() {
           return
         }
 
-        console.log("Données du sondage chargées :", response.data)
-        setSurvey(response.data)
+        setSurvey(surveyResponse.data)
+
+        // Si on a un response_id, récupérer la réponse existante
+        const responseId = searchParams.get('response_id')
+        if (responseId) {
+          const token = Cookies.get('token')
+          if (!token) {
+            toast({
+              title: "Erreur",
+              description: "Vous devez être connecté pour modifier une réponse",
+              variant: "destructive",
+            })
+            return
+          }
+
+          const responseData = await getResponseById(token, responseId)
+          if (responseData.error) {
+            toast({
+              title: "Erreur",
+              description: responseData.error,
+              variant: "destructive",
+            })
+            return
+          }
+
+          if (responseData.data && surveyResponse.data) {
+            // Transformer la réponse au format enrichi
+            const enrichedResponse: EnrichedResponseData = {
+              _id: responseData.data._id,
+              survey: responseData.data.survey_id,
+              user: responseData.data.user_id,
+              answers: responseData.data.answers.map(answer => {
+                const question = surveyResponse.data?.questions.find(q => q._id === answer.question_id)
+                if (!question) {
+                  console.warn(`Question ${answer.question_id} non trouvée dans le sondage`)
+                  return null
+                }
+                return {
+                  question,
+                  value: answer.value
+                }
+              }).filter((answer): answer is { question: any; value: string } => answer !== null),
+              created_at: responseData.data.created_at
+            }
+            setExistingResponse(enrichedResponse)
+          }
+        }
       } catch (error) {
-        console.error("Erreur lors du chargement du sondage :", error)
+        console.error("Erreur lors du chargement des données :", error)
         toast({
           title: "Erreur",
-          description: "Une erreur est survenue lors de la récupération du sondage",
+          description: "Une erreur est survenue lors de la récupération des données",
           variant: "destructive",
         })
       } finally {
@@ -53,8 +101,8 @@ export default function RespondPage() {
       }
     }
 
-    fetchSurvey()
-  }, [params.id])
+    fetchData()
+  }, [params.id, searchParams])
 
   if (isLoading) {
     return (
@@ -82,10 +130,14 @@ export default function RespondPage() {
     <div className="container mx-auto py-8">
       <Card>
         <CardHeader>
-          <CardTitle>{survey.name}</CardTitle>
+          <CardTitle>{existingResponse ? "Modifier votre réponse" : survey.name}</CardTitle>
         </CardHeader>
         <CardContent>
-          <ResponseForm survey={survey} user={user} />
+          <ResponseForm 
+            survey={survey} 
+            user={user} 
+            existingResponse={existingResponse}
+          />
         </CardContent>
       </Card>
     </div>

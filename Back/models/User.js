@@ -3,7 +3,17 @@ import bcrypt from "bcrypt";
 
 const userSchema = new mongoose.Schema({
     name: { type: String, required: true },
-    email: { type: String, unique: true, required: true },
+    email: { 
+        type: String, 
+        unique: true, 
+        required: true,
+        validate: {
+            validator: function(v) {
+                return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+            },
+            message: props => `${props.value} n'est pas un email valide`
+        }
+    },
     password: { type: String, required: true },
     registration_date: { type: Date, default: Date.now }, 
 });

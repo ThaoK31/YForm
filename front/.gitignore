@@ -1,0 +1,21 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# Next.js specific
+.next/
+out/
+.vercel
+next-env.d.ts
+*.tsbuildinfo
+
+# Next.js PWA files
+**/public/sw.js
+**/public/workbox-*.js
+**/public/worker-*.js
+**/public/sw.js.map
+**/public/workbox-*.js.map
+**/public/worker-*.js.map
+
+# Next.js dependencies
+.pnp
+.pnp.js
+.yarn/install-state.gz

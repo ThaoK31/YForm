@@ -1,0 +1,15 @@
+export const Eye = () => <span data-testid="eye-icon" />
+export const EyeOff = () => <span data-testid="eye-off-icon" />
+export const Mail = () => <span data-testid="mail-icon" />
+export const Lock = () => <span data-testid="lock-icon" />
+export const PlusCircle = () => <span data-testid="icon-plus-circle" />
+export const Trash2 = () => <span data-testid="icon-trash" />
+export const Image = () => <span data-testid="icon-image" />
+export const Type = () => <span data-testid="icon-type" />
+export const FileText = () => <span data-testid="icon-file" />
+export const Video = () => <span data-testid="icon-video" />
+export const Copy = () => <span data-testid="icon-copy" />
+export const MoreVertical = () => <span data-testid="icon-more" />
+export const ChevronDown = () => <span data-testid="icon-chevron-down" />
+export const ChevronUp = () => <span data-testid="icon-chevron-up" />
+export const Check = () => <span data-testid="icon-check" /> 

@@ -1,52 +1,99 @@
 import * as surveyService from '../services/surveyService.js';
+import { ApiError } from '../middleware/errorHandler.js';
 
-export const createSurvey = async (req, res) => {
-    const { name, questions } = req.body;
-    const creatorId = req.user.id;
-
-    if (!name) return res.status(400).json({ error: 'Le champ "nom" est obligatoire.' });
+const validateQuestions = (questions) => {
     if (!questions || !Array.isArray(questions) || questions.length === 0) {
-        return res.status(400).json({ error: 'Le sondage doit contenir au moins une question.' });
+        throw new ApiError(400, 'Le sondage doit contenir au moins une question.');
+    }
+
+    for (const question of questions) {
+        if (!question.text || question.text.trim().length < 3) {
+            throw new ApiError(400, 'Chaque question doit contenir au moins 3 caractères.');
+        }
+        if (question.type === "mcq" && (!question.options || question.options.length < 2)) {
+            throw new ApiError(400, 'Les questions MCQ doivent avoir au moins 2 options');
+        }
+    }
+};
+
+export const createSurvey = async (req, res, next) => {
+    const { name, questions } = req.body;
+    const creator_id = req.user._id;
+
+    if (!name) {
+        return next(new ApiError(400, 'Le champ "nom" est obligatoire.'));
     }
 
     try {
-        const survey = await surveyService.createSurvey(name, questions, creatorId);
+        validateQuestions(questions);
+        const survey = await surveyService.createSurvey(name, questions, creator_id);
         res.status(201).json(survey);
     } catch (error) {
-        console.error('❌ Erreur lors de la création du sondage :', error);
-        res.status(400).json({ error: error.message });
+        next(error);
     }
 };
 
-export const getAllSurveys = async (req, res) => {
+export const getAllSurveys = async (req, res, next) => {
     try {
-        const surveys = await surveyService.getAllSurveys();
-        res.status(200).json(surveys);
+        const surveys = await surveyService.getAllSurveys(req.user._id);
+        res.json(surveys);
     } catch (error) {
-        console.error('❌ Erreur lors de la récupération des sondages :', error);
-        res.status(500).json({ error: error.message });
+        next(error);
     }
 };
 
-export const getSurveyById = async (req, res) => {
+export const getSurveyById = async (req, res, next) => {
     try {
         const survey = await surveyService.getSurveyById(req.params.id);
         res.json(survey);
     } catch (error) {
-        console.error('❌ Erreur lors de la récupération du sondage :', error);
-        res.status(404).json({ error: error.message });
+        next(error);
     }
 };
 
-export const deleteSurvey = async (req, res) => {
+export const deleteSurvey = async (req, res, next) => {
     try {
-        const result = await surveyService.deleteSurvey(req.params.id, req.user.id);
+        const result = await surveyService.deleteSurvey(req.params.id, req.user._id);
         res.json(result);
     } catch (error) {
-        console.error('❌ Erreur lors de la suppression du sondage :', error);
-        if (error.message === 'Non autorisé') {
-            return res.status(403).json({ error: error.message });
+        next(error);
+    }
+};
+
+export const updateSurvey = async (req, res, next) => {
+    try {
+        if (req.body.questions) {
+            validateQuestions(req.body.questions);
         }
-        res.status(404).json({ error: error.message });
+
+        const survey = await surveyService.updateSurvey(
+            req.params.id,
+            req.user._id,
+            {
+                name: req.body.name,
+                questions: req.body.questions
+            }
+        );
+        res.json(survey);
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const getUserSurveys = async (req, res, next) => {
+    try {
+        const surveys = await surveyService.getUserSurveys(req.user._id);
+        res.json(surveys);
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const getSurveyResponseCount = async (req, res, next) => {
+    try {
+        const count = await surveyService.getSurveyResponseCount(req.params.id, req.user._id);
+        res.json({ count });
+    } catch (error) {
+        next(error);
     }
 }; 

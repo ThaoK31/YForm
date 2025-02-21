@@ -62,14 +62,14 @@ describe('Response API Tests', () => {
 
         // Créer une réponse de test via l'API
         const responseData = {
-            surveyId: testSurvey._id,
+            survey_id: testSurvey._id,
             answers: [
                 {
-                    questionId: testSurvey.questions[0]._id,
+                    question_id: testSurvey.questions[0]._id,
                     value: 'Test Answer 1'
                 },
                 {
-                    questionId: testSurvey.questions[1]._id,
+                    question_id: testSurvey.questions[1]._id,
                     value: 'Option 1'
                 }
             ]
@@ -103,14 +103,14 @@ describe('Response API Tests', () => {
                 });
 
             const newResponse = {
-                surveyId: testSurvey._id,
+                survey_id: testSurvey._id,
                 answers: [
                     {
-                        questionId: testSurvey.questions[0]._id,
+                        question_id: testSurvey.questions[0]._id,
                         value: 'New Answer 1'
                     },
                     {
-                        questionId: testSurvey.questions[1]._id,
+                        question_id: testSurvey.questions[1]._id,
                         value: 'Option 2'
                     }
                 ]
@@ -129,7 +129,7 @@ describe('Response API Tests', () => {
 
         test('devrait retourner une erreur 400 si les réponses sont manquantes', async () => {
             const invalidResponse = {
-                surveyId: testSurvey._id
+                survey_id: testSurvey._id
             };
 
             const res = await request(app)
@@ -143,10 +143,10 @@ describe('Response API Tests', () => {
 
         test('devrait retourner une erreur 400 si une réponse MCQ est invalide', async () => {
             const invalidResponse = {
-                surveyId: testSurvey._id,
+                survey_id: testSurvey._id,
                 answers: [
                     {
-                        questionId: testSurvey.questions[1]._id,
+                        question_id: testSurvey.questions[1]._id,
                         value: 'Invalid Option'
                     }
                 ]
@@ -162,7 +162,7 @@ describe('Response API Tests', () => {
 
         test('devrait retourner 401 sans authentification', async () => {
             const newResponse = {
-                surveyId: testSurvey._id,
+                survey_id: testSurvey._id,
                 answers: []
             };
 
@@ -202,8 +202,8 @@ describe('Response API Tests', () => {
                 .post('/api/responses')
                 .set('Authorization', `Bearer ${otherLoginRes.body.token}`)
                 .send({
-                    surveyId: survey._id,
-                    answers: [{ questionId: survey.questions[0]._id, value: 'Test Answer' }]
+                    survey_id: survey._id,
+                    answers: [{ question_id: survey.questions[0]._id, value: 'Test Answer' }]
                 });
 
             // Récupérer les réponses avec testUser (créateur du sondage)
@@ -257,8 +257,8 @@ describe('Response API Tests', () => {
                 .post('/api/responses')
                 .set('Authorization', `Bearer ${authToken}`)
                 .send({
-                    surveyId: survey._id,
-                    answers: [{ questionId: survey.questions[0]._id, value: 'Test Answer' }]
+                    survey_id: survey._id,
+                    answers: [{ question_id: survey.questions[0]._id, value: 'Test Answer' }]
                 });
 
             // Récupérer la réponse spécifique
@@ -298,8 +298,8 @@ describe('Response API Tests', () => {
                 .post('/api/responses')
                 .set('Authorization', `Bearer ${authToken}`)
                 .send({
-                    surveyId: survey._id,
-                    answers: [{ questionId: survey.questions[0]._id, value: 'Test Answer' }]
+                    survey_id: survey._id,
+                    answers: [{ question_id: survey.questions[0]._id, value: 'Test Answer' }]
                 });
 
             // Récupérer les réponses de l'utilisateur

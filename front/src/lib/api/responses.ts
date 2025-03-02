@@ -107,3 +107,18 @@ export const deleteResponse = async (token: string, response_id: string): Promis
 
     return handleApiResponse<{ message: string }>(response);
 };
+
+export const getTotalResponses = async (token: string): Promise<ApiResponse<number>> => {
+    const response = await fetch(`${API_URL}/api/responses/total`, {
+        headers: {
+            'Authorization': `Bearer ${token}`,
+        },
+        credentials: 'include',
+    });
+
+    const result = await handleApiResponse<{ total: number }>(response);
+    return {
+        ...result,
+        data: result.data?.total
+    };
+};

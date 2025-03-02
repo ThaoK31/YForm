@@ -1,8 +1,11 @@
 import express from "express";
-import { submitResponse, getResponseById, getSurveyResponses, getUserResponses, deleteResponse } from "../controllers/responseController.js";
+import { submitResponse, getResponseById, getSurveyResponses, getUserResponses, deleteResponse, getTotalResponses } from "../controllers/responseController.js";
 import auth from "../middleware/auth.js";
 
 const router = express.Router();
+
+// Obtenir le total des réponses pour tous les sondages de l'utilisateur
+router.get("/total", auth, getTotalResponses);
 
 // Soumettre une réponse (protégé)
 router.post("/", auth, submitResponse);

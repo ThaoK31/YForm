@@ -1,5 +1,6 @@
 import Response from "../models/Response.js";
 import Survey from "../models/Survey.js";
+import { getUserSurveys } from "./surveyService.js";
 import { ApiError } from '../middleware/errorHandler.js';
 
 export const createResponse = async ({ survey_id, user_id, answers }) => {
@@ -174,4 +175,17 @@ export const deleteResponseById = async (response_id, user_id) => {
     }
 
     await Response.findByIdAndDelete(response_id);
+};
+
+export const getTotalResponsesForUser = async (user_id) => {
+    // Récupérer les sondages de l'utilisateur
+    const userSurveys = await getUserSurveys(user_id);
+    const surveyIds = userSurveys.map(survey => survey._id);
+
+    // Compter le nombre total de réponses pour tous les sondages de l'utilisateur
+    const total = await Response.countDocuments({
+        survey_id: { $in: surveyIds }
+    });
+
+    return total;
 }; 

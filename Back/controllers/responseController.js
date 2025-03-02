@@ -1,4 +1,4 @@
-import { createResponse, findResponseById, findSurveyResponses, findUserResponses, deleteResponseById } from '../services/responseService.js';
+import { createResponse, findResponseById, findSurveyResponses, findUserResponses, deleteResponseById, getTotalResponsesForUser } from '../services/responseService.js';
 import { ApiError } from '../middleware/errorHandler.js';
 
 export const submitResponse = async (req, res, next) => {
@@ -55,6 +55,15 @@ export const deleteResponse = async (req, res, next) => {
     try {
         await deleteResponseById(req.params.response_id, req.user._id);
         res.status(200).json({ message: 'Réponse supprimée avec succès' });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const getTotalResponses = async (req, res, next) => {
+    try {
+        const total = await getTotalResponsesForUser(req.user._id);
+        res.json({ total });
     } catch (error) {
         next(error);
     }

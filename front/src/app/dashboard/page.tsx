@@ -8,6 +8,7 @@ import { getUserSurveys, deleteSurvey } from "@/lib/api/survey"
 import { useAuth } from "@/hooks/use-auth"
 import { PlusCircle, ClipboardList, LineChart } from "lucide-react"
 import { useRecentResponses } from "@/hooks/use-recent-responses"
+import { useTotalResponses } from "@/hooks/use-total-responses"
 import { toast } from "@/hooks/use-toast"
 import { StatsCard, RecentResponses, RecentSurveys } from "@/components/dashboard"
 
@@ -16,6 +17,7 @@ export default function DashboardPage() {
   const [surveys, setSurveys] = useState<SurveyResponse[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const { responses, isLoading: responsesLoading } = useRecentResponses()
+  const { total: totalResponses, isLoading: totalLoading } = useTotalResponses()
 
   const copyResponseLink = (survey_id: string) => {
     if (!survey_id) {
@@ -130,9 +132,10 @@ export default function DashboardPage() {
           />
           <StatsCard
             title="Réponses reçues"
-            value={248}
-            description="+22% par rapport au mois dernier"
+            value={totalLoading ? "..." : totalResponses}
+            description="Total des réponses reçues"
             icon={LineChart}
+            href="/responses"
           />
         </div>
 

@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
-import { PlusCircle, Trash2, Image, Type, FileText, Video, Copy, MoreVertical } from "lucide-react"
+import { PlusCircle, Trash2, Image, Type, FileText, Video, Copy, MoreVertical, GripVertical } from "lucide-react"
 import { FormValues } from "@/components/surveys/create/survey-form"
 import { QuestionType } from "@/lib/types/survey"
 import { QuestionOptions } from "@/components/surveys/create/question-options"
@@ -24,10 +24,11 @@ interface QuestionCardProps {
   form: UseFormReturn<FormValues>
   index: number
   onRemove: () => void
-  onAdd: () => void
+  onAdd?: () => void
+  onDuplicate?: () => void
 }
 
-export function QuestionCard({ form, index, onRemove, onAdd }: QuestionCardProps) {
+export function QuestionCard({ form, index, onRemove, onAdd, onDuplicate }: QuestionCardProps) {
   const handleTypeChange = (value: QuestionType) => {
     if (value === "mcq" && form.getValues(`questions.${index}.options`).length === 0) {
       form.setValue(`questions.${index}.options`, ["Option 1"])
@@ -38,10 +39,14 @@ export function QuestionCard({ form, index, onRemove, onAdd }: QuestionCardProps
   }
 
   const duplicateQuestion = () => {
-    const currentQuestion = form.getValues(`questions.${index}`)
-    onAdd()
-    const newIndex = form.getValues("questions").length - 1
-    form.setValue(`questions.${newIndex}`, currentQuestion)
+      const currentQuestion = form.getValues(`questions.${index}`)
+      if (onAdd) {
+        onAdd()
+        const newIndex = form.getValues("questions").length - 1
+        form.setValue(`questions.${newIndex}`, currentQuestion)
+      } else if (onDuplicate) {
+        onDuplicate()
+      }
   }
 
   return (
@@ -49,6 +54,9 @@ export function QuestionCard({ form, index, onRemove, onAdd }: QuestionCardProps
       <Card className="p-6">
         <div className="space-y-4">
           <div className="flex items-center justify-between">
+            <div className="cursor-move mr-2 opacity-30 hover:opacity-100">
+              <GripVertical className="h-5 w-5" />
+            </div>
             <FormField
               control={form.control}
               name={`questions.${index}.text`}
@@ -120,6 +128,7 @@ export function QuestionCard({ form, index, onRemove, onAdd }: QuestionCardProps
             <PlusCircle className="h-4 w-4" />
           </Button>
           <Button 
+            type="button"
             variant="ghost" 
             size="icon" 
             className="rounded-full"

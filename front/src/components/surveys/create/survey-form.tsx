@@ -19,6 +19,7 @@ const questionSchema = z.object({
   text: z.string().min(1, "La question est requise"),
   type: z.enum(["open", "mcq", "yes/no"] as const),
   options: z.array(z.string()).default([]),
+  order: z.number().optional(),
 })
 
 const formSchema = z.object({
@@ -42,7 +43,14 @@ export function SurveyForm({ initialData, onCancel, mode = "create" }: SurveyFor
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: initialData?.name || "",
-      questions: initialData?.questions || [{ text: "", type: "open", options: [] }],
+      questions: initialData?.questions && initialData.questions.length > 0 
+        ? initialData.questions.map(q => ({
+            text: q.text,
+            type: q.type,
+            options: q.options || [],
+            order: q.order || 0
+          }))
+        : [{ text: "", type: "open", options: [], order: 1 }],
     },
   })
 
@@ -53,9 +61,14 @@ export function SurveyForm({ initialData, onCancel, mode = "create" }: SurveyFor
         return
       }
 
+      const questionsWithOrder = values.questions.map((question, index) => ({
+        ...question,
+        order: question.order || index + 1
+      }));
+      
       const surveyData: CreateSurveyData = {
         name: values.name,
-        questions: values.questions
+        questions: questionsWithOrder
       }
 
       const response = mode === "create" 

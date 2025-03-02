@@ -44,4 +44,32 @@ export const getCurrentUser = async (req, res, next) => {
     } catch (error) {
         next(error);
     }
+};
+
+export const updateUser = async (req, res, next) => {
+    try {
+        const { name, email, currentPassword, newPassword } = req.body;
+        
+        // Validation des champs
+        if (!name && !email && !newPassword) {
+            return next(new ApiError(400, 'Au moins un champ à mettre à jour est requis'));
+        }
+
+        // Préparer les mises à jour
+        const updates = {};
+        if (name) updates.name = name;
+        if (email) updates.email = email;
+        if (newPassword) {
+            if (!currentPassword) {
+                return next(new ApiError(400, 'Le mot de passe actuel est requis pour changer le mot de passe'));
+            }
+            updates.newPassword = newPassword;
+            updates.currentPassword = currentPassword;
+        }
+
+        const updatedUser = await authService.updateUser(req.user._id, updates);
+        res.json({ user: updatedUser });
+    } catch (error) {
+        next(error);
+    }
 }; 

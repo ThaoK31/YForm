@@ -7,6 +7,7 @@ export interface Question {
     text: string;
     type: QuestionType;
     options: string[];  // Options pour les questions MCQ
+    order?: number;     // Ordre de la question dans le sondage
 }
 
 // Types liés aux sondages

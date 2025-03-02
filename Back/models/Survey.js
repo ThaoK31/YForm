@@ -21,6 +21,10 @@ const questionSchema = new mongoose.Schema({
             },
             message: "Les questions MCQ doivent avoir au moins 2 options"
         }
+    },
+    order: {
+        type: Number,
+        default: 0 // Pour gérer l'ordre des questions
     }
 });
 
@@ -29,6 +33,21 @@ const surveySchema = new mongoose.Schema({
     creator: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // Référence vers l'utilisateur créateur
     questions: [questionSchema],
     created_at: { type: Date, default: Date.now }, 
+});
+
+// Middleware pre-save pour s'assurer que l'ordre est correct si non spécifié
+surveySchema.pre('save', function(next) {
+    // Si les questions n'ont pas d'ordre défini, attribuer un ordre basé sur leur position dans le tableau
+    this.questions.forEach((question, index) => {
+        if (question.order === 0) {
+            question.order = index + 1;
+        }
+    });
+    
+    // Trier les questions par ordre
+    this.questions.sort((a, b) => a.order - b.order);
+    
+    next();
 });
 
 const Survey = mongoose.model("Survey", surveySchema);

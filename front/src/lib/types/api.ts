@@ -42,6 +42,7 @@ export interface Question {
     text: string;
     type: "open" | "mcq" | "yes/no";
     options: string[];  // Options pour les questions MCQ
+    order?: number;     // Ordre de la question
 }
 
 // Types liés aux sondages

@@ -76,7 +76,6 @@ export default function RespondPage() {
               answers: responseData.data.answers.map(answer => {
                 const question = surveyResponse.data?.questions.find(q => q._id === answer.question_id)
                 if (!question) {
-                  console.warn(`Question ${answer.question_id} non trouvée dans le sondage`)
                   return null
                 }
                 return {

@@ -20,7 +20,6 @@ export default function SurveysPage() {
 
   const copyResponseLink = (survey_id: string) => {
     if (!survey_id) {
-      console.error("ID du sondage manquant", survey_id)
       toast({
         title: "Erreur",
         description: "Impossible de copier le lien : ID du sondage manquant",
@@ -31,14 +30,12 @@ export default function SurveysPage() {
 
     try {
       const link = `${window.location.origin}/surveys/${survey_id}/respond`
-      console.log("Lien généré :", link)
       navigator.clipboard.writeText(link)
       toast({
         title: "Succès",
         description: "Lien de réponse copié !",
       })
     } catch (error) {
-      console.error("Erreur lors de la copie du lien :", error)
       toast({
         title: "Erreur",
         description: "Impossible de copier le lien",
@@ -92,11 +89,11 @@ export default function SurveysPage() {
               const userResponse = responsesResult.data?.find(
                 response => response && response.survey_id && response.survey_id._id === survey._id
               )
-              console.log('Checking survey:', survey._id, 'Response:', userResponse)
+              const hasResponse = userResponse !== null && userResponse !== undefined;
               return {
                 ...survey,
-                responseCount: countResult.data || 0,
-                userResponseId: userResponse?._id || null
+                responseCount: countResult.data  || 0,
+                userResponseId: hasResponse ? userResponse?._id : null
               }
             })
           )

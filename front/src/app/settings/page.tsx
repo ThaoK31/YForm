@@ -102,8 +102,8 @@ export default function SettingsPage() {
         // Mettre à jour le formulaire avec les nouvelles données
         setFormData(prev => ({
           ...prev,
-          name: result.data.name,
-          email: result.data.email,
+          name: result.data?.name || prev.name,
+          email: result.data?.email || prev.email,
           currentPassword: "",
           newPassword: "",
           confirmPassword: ""

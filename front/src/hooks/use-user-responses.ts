@@ -35,40 +35,32 @@ export function useUserResponses() {
       }
       
       if (result.data) {
-        console.log('Données brutes reçues:', JSON.stringify(result.data, null, 2))
-
         // Transformer les réponses pour correspondre à la structure attendue
         const transformedResponses = result.data
           .filter(response => {
             if (!response) {
-              console.warn('Réponse null ou undefined')
               return false
             }
 
             // Vérification détaillée de survey_id
             if (!response.survey_id) {
-              console.warn('Sondage supprimé ou inaccessible pour la réponse:', response._id)
               return false
             }
 
             // Vérification spécifique des questions
             if (!response.survey_id.questions) {
-              console.warn('Questions manquantes dans le sondage:', response.survey_id._id)
               return false
             }
 
             if (!Array.isArray(response.survey_id.questions)) {
-              console.warn('Le format des questions est invalide pour le sondage:', response.survey_id._id)
               return false
             }
 
             if (!response.user_id) {
-              console.warn('Utilisateur manquant pour la réponse:', response._id)
               return false
             }
 
             if (!Array.isArray(response.answers)) {
-              console.warn('Format des réponses invalide pour la réponse:', response._id)
               return false
             }
 
@@ -76,23 +68,10 @@ export function useUserResponses() {
           })
           .map(response => {
             try {
-              // Log pour déboguer
-              console.log('Traitement de la réponse:', {
-                response_id: response._id,
-                survey_id: response.survey_id._id,
-                survey_name: response.survey_id.name,
-                questions_count: response.survey_id.questions.length,
-                answers_count: response.answers.length
-              })
-
               // Enrichir les réponses avec les informations des questions
               const enrichedAnswers: EnrichedSurveyAnswer[] = response.answers
                 .filter(answer => {
                   if (!answer.question_id || !answer.value) {
-                    console.warn('Réponse invalide pour la question:', {
-                      response_id: response._id,
-                      answer
-                    })
                     return false
                   }
                   return true
@@ -103,15 +82,6 @@ export function useUserResponses() {
                   )
 
                   if (!question) {
-                    console.warn('Question non trouvée dans le sondage:', {
-                      response_id: response._id,
-                      survey_id: response.survey_id._id,
-                      question_id: answer.question_id,
-                      available_questions: response.survey_id.questions.map(q => ({
-                        id: q._id,
-                        text: q.text
-                      }))
-                    })
                     return null
                   }
 
@@ -123,10 +93,6 @@ export function useUserResponses() {
                 .filter((answer): answer is EnrichedSurveyAnswer => answer !== null)
 
               if (enrichedAnswers.length === 0) {
-                console.warn('Aucune réponse valide trouvée pour:', {
-                  response_id: response._id,
-                  survey_id: response.survey_id._id
-                })
                 return null
               }
 
@@ -166,16 +132,10 @@ export function useUserResponses() {
             )
 
             if (!isValid) {
-              console.warn('Réponse transformée invalide:', {
-                response_id: response?._id,
-                survey_id: response?.survey?._id
-              })
             }
             return isValid
           })
           
-        console.log('Réponses transformées:', validResponses)
-
         // Trier par date de création (plus récent en premier)
         const sortedResponses = validResponses.sort(
           (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()

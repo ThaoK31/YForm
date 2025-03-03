@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { Suspense } from "react"
 import { LoginForm } from "@/components/auth/login-form"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 
@@ -13,7 +14,9 @@ export default function LoginPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <LoginForm />
+          <Suspense fallback={<div>Chargement...</div>}>
+            <LoginForm />
+          </Suspense>
         </CardContent>
         <CardFooter className="flex justify-center">
           <p className="text-sm text-muted-foreground">

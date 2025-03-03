@@ -9,7 +9,11 @@ const responseSchema = new mongoose.Schema({
     user_id: { 
         type: mongoose.Schema.Types.ObjectId, 
         ref: "User", 
-        required: true 
+        required: false
+    },
+    anonymous: {
+        type: Boolean,
+        default: false
     },
     answers: [{
         question_id: {
@@ -29,7 +33,14 @@ const responseSchema = new mongoose.Schema({
 });
 
 // Vérifier que l'utilisateur n'a pas déjà répondu au sondage
-responseSchema.index({ survey_id: 1, user_id: 1 }, { unique: true });
+// Uniquement pour les réponses non anonymes
+responseSchema.index({ 
+    survey_id: 1, 
+    user_id: 1 
+}, { 
+    unique: true,
+    partialFilterExpression: { anonymous: false, user_id: { $exists: true } }
+});
 
 const Response = mongoose.model("Response", responseSchema);
 export default Response; 

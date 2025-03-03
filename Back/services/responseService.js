@@ -3,7 +3,7 @@ import Survey from "../models/Survey.js";
 import { getUserSurveys } from "./surveyService.js";
 import { ApiError } from '../middleware/errorHandler.js';
 
-export const createResponse = async ({ survey_id, user_id, answers }) => {
+export const createResponse = async ({ survey_id, user_id, anonymous, answers }) => {
     // Vérifier que le sondage existe et récupérer ses informations
     const survey = await Survey.findById(survey_id).populate('creator');
     if (!survey) {
@@ -33,30 +33,44 @@ export const createResponse = async ({ survey_id, user_id, answers }) => {
         }
     }
 
-    // Vérifier si l'utilisateur a déjà répondu
-    const existingResponse = await Response.findOne({ survey_id, user_id });
-    if (existingResponse) {
-        // Mettre à jour la réponse existante
-        existingResponse.answers = answers;
-        await existingResponse.save();
-        
-        return Response.findById(existingResponse._id)
-            .populate({
-                path: 'survey_id',
-                populate: { 
-                    path: 'creator',
-                    select: 'name email'
-                }
-            })
-            .populate('user_id', 'name email');
+    // Pour les réponses non anonymes avec un utilisateur
+    if (!anonymous && user_id) {
+        // Vérifier si l'utilisateur a déjà répondu
+        const existingResponse = await Response.findOne({ survey_id, user_id });
+        if (existingResponse) {
+            // Mettre à jour la réponse existante
+            existingResponse.answers = answers;
+            await existingResponse.save();
+            
+            return Response.findById(existingResponse._id)
+                .populate({
+                    path: 'survey_id',
+                    populate: { 
+                        path: 'creator',
+                        select: 'name email'
+                    }
+                })
+                .populate('user_id', 'name email');
+        }
     }
 
     // Créer une nouvelle réponse
-    const response = await Response.create({
+    const responseData = {
         survey_id,
-        user_id,
         answers
-    });
+    };
+
+    // Ajouter user_id uniquement si ce n'est pas anonyme
+    if (!anonymous && user_id) {
+        responseData.user_id = user_id;
+        responseData.anonymous = false;
+    } else {
+        responseData.anonymous = true;
+        // S'assurer que user_id n'est pas présent
+        delete responseData.user_id;
+    }
+
+    const response = await Response.create(responseData);
 
     // Retourner la réponse avec les références peuplées
     return Response.findById(response._id)
@@ -85,9 +99,28 @@ export const findResponseById = async (response_id, user_id) => {
         throw new ApiError(404, 'Réponse non trouvée');
     }
 
-    // Vérifier si l'utilisateur est autorisé (créateur du sondage ou propriétaire de la réponse)
+    // Si c'est une réponse anonyme, seul le créateur du sondage peut y accéder
+    if (response.anonymous) {
+        // Si user_id n'est pas fourni, l'utilisateur n'est pas connecté
+        if (!user_id) {
+            throw new ApiError(403, 'Non autorisé');
+        }
+        
+        const isCreator = response.survey_id.creator._id.toString() === user_id.toString();
+        if (!isCreator) {
+            throw new ApiError(403, 'Non autorisé');
+        }
+        
+        return response;
+    }
+
+    // Pour les réponses non anonymes, vérifier si l'utilisateur est autorisé
+    if (!user_id) {
+        throw new ApiError(403, 'Non autorisé');
+    }
+    
     const isCreator = response.survey_id.creator._id.toString() === user_id.toString();
-    const isOwner = response.user_id._id.toString() === user_id.toString();
+    const isOwner = response.user_id && response.user_id._id.toString() === user_id.toString();
 
     if (!isCreator && !isOwner) {
         throw new ApiError(403, 'Non autorisé');
@@ -101,6 +134,11 @@ export const findSurveyResponses = async (survey_id, user_id) => {
     const survey = await Survey.findById(survey_id).populate('creator');
     if (!survey) {
         throw new ApiError(404, 'Sondage non trouvé');
+    }
+
+    // Si l'utilisateur n'est pas connecté, on ne retourne rien
+    if (!user_id) {
+        throw new ApiError(403, 'Authentification requise pour voir les réponses');
     }
 
     // Vérifier si l'utilisateur est le créateur du sondage
@@ -167,6 +205,11 @@ export const deleteResponseById = async (response_id, user_id) => {
 
     if (!response) {
         throw new ApiError(404, 'Réponse non trouvée');
+    }
+
+    // Si c'est une réponse anonyme, on ne peut pas la supprimer (ou uniquement par l'admin)
+    if (response.anonymous) {
+        throw new ApiError(403, 'Les réponses anonymes ne peuvent pas être supprimées');
     }
 
     // Vérifier que l'utilisateur est le créateur de la réponse

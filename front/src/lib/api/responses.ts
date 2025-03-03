@@ -21,7 +21,11 @@ async function handleApiResponse<T>(response: Response): Promise<ApiResponse<T>>
     };
 }
 
-export const submitResponse = async (token: string, data: { survey_id: string; answers: Array<{ question_id: string; value: string }> }): Promise<ApiResponse<RawResponseData>> => {
+export const submitResponse = async (token: string | null, data: { 
+    survey_id: string; 
+    answers: Array<{ question_id: string; value: string }>;
+    anonymous?: boolean;
+}): Promise<ApiResponse<RawResponseData>> => {
     if (!data.survey_id || !data.answers || data.answers.length === 0) {
         return {
             error: 'Données de réponse invalides',
@@ -29,12 +33,18 @@ export const submitResponse = async (token: string, data: { survey_id: string; a
         };
     }
 
+    const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+    };
+
+    // Ajouter le token d'authentification seulement s'il est fourni et qu'on n'est pas en mode anonyme
+    if (token && !data.anonymous) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+
     const response = await fetch(`${API_URL}/api/responses`, {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-        },
+        headers,
         credentials: 'include',
         body: JSON.stringify(data),
     });

@@ -10,6 +10,9 @@ const authRoutes = ['/login', '/register']
 // Routes qui nécessitent d'être connecté (protected routes)
 const protectedRoutes = ['/dashboard', '/surveys', '/responses']
 
+// Routes d'exception qui sont publiques même si elles commencent par un préfixe protégé
+const publicExceptions = ['/surveys/[id]/respond']
+
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
   const token = request.cookies.get('token')?.value
@@ -19,8 +22,17 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
+  // Vérifier si la route actuelle correspond à une exception publique
+  const isPublicException = publicExceptions.some(pattern => {
+    // Convertir le pattern [id] en un regex
+    const regexPattern = pattern.replace(/\[([^\]]+)\]/g, '([^/]+)')
+    const regex = new RegExp(`^${regexPattern}$`)
+    return regex.test(pathname)
+  })
+
   // Si l'utilisateur n'est pas connecté et essaie d'accéder à une route protégée
-  if (protectedRoutes.some(route => pathname.startsWith(route)) && !token) {
+  // mais ce n'est pas une exception publique
+  if (protectedRoutes.some(route => pathname.startsWith(route)) && !token && !isPublicException) {
     const loginUrl = new URL('/login', request.url)
     loginUrl.searchParams.set('from', pathname)
     return NextResponse.redirect(loginUrl)

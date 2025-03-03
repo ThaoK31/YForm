@@ -130,13 +130,17 @@ export function useUserResponses() {
                 return null
               }
 
-              return {
+              // Créer un objet conforme à EnrichedResponseData
+              const enrichedResponse: EnrichedResponseData = {
                 _id: response._id,
                 survey: response.survey_id,
-                user: response.user_id,
+                user: response.user_id || null,
+                anonymous: response.anonymous,
                 answers: enrichedAnswers,
                 created_at: response.created_at
               }
+              
+              return enrichedResponse
             } catch (error) {
               console.error('Erreur lors de la transformation de la réponse:', {
                 response_id: response._id,
@@ -145,15 +149,20 @@ export function useUserResponses() {
               return null
             }
           })
+
+        // Filtrer les null et les réponses invalides, puis trier
+        const validResponses = transformedResponses
           .filter((response): response is EnrichedResponseData => {
             if (!response) return false
 
+            const hasValidUser = response.anonymous || 
+              (response.user && response.user.name);
+              
             const isValid = Boolean(
               response.answers.length > 0 &&
               response.survey &&
-              response.user &&
               response.survey._id &&
-              response.user.name
+              hasValidUser
             )
 
             if (!isValid) {
@@ -164,11 +173,11 @@ export function useUserResponses() {
             }
             return isValid
           })
-
-        console.log('Réponses transformées:', transformedResponses)
+          
+        console.log('Réponses transformées:', validResponses)
 
         // Trier par date de création (plus récent en premier)
-        const sortedResponses = transformedResponses.sort(
+        const sortedResponses = validResponses.sort(
           (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
         )
 

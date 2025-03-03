@@ -44,9 +44,9 @@ export default function RespondPage() {
 
         setSurvey(surveyResponse.data)
 
-        // Si on a un response_id, récupérer la réponse existante
+        // Si on a un response_id ET que l'utilisateur est connecté, récupérer la réponse existante
         const responseId = searchParams.get('response_id')
-        if (responseId) {
+        if (responseId && user) {
           const token = Cookies.get('token')
           if (!token) {
             toast({
@@ -72,7 +72,7 @@ export default function RespondPage() {
             const enrichedResponse: EnrichedResponseData = {
               _id: responseData.data._id,
               survey: responseData.data.survey_id,
-              user: responseData.data.user_id,
+              user: responseData.data.user_id || null,
               answers: responseData.data.answers.map(answer => {
                 const question = surveyResponse.data?.questions.find(q => q._id === answer.question_id)
                 if (!question) {
@@ -102,7 +102,7 @@ export default function RespondPage() {
     }
 
     fetchData()
-  }, [params.id, searchParams])
+  }, [params.id, searchParams, user])
 
   if (isLoading) {
     return (
@@ -131,6 +131,11 @@ export default function RespondPage() {
       <Card>
         <CardHeader>
           <CardTitle>{existingResponse ? "Modifier votre réponse" : survey.name}</CardTitle>
+          {!user && (
+            <p className="text-sm text-muted-foreground mt-2">
+              Vous n'êtes pas connecté. Vous pouvez répondre anonymement ou vous <a href="/login" className="text-primary hover:underline">connecter</a> pour associer votre réponse à votre compte.
+            </p>
+          )}
         </CardHeader>
         <CardContent>
           <ResponseForm 

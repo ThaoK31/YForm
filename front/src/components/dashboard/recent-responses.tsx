@@ -42,9 +42,12 @@ export function RecentResponses({ responses, isLoading }: RecentResponsesProps) 
           <div className="space-y-4">
             {responses.length > 0 ? (
               responses.map((response: EnrichedResponseData) => {
-                if (!response?.survey?._id || !response?.user?.name) {
+                if (!response?.survey?._id) {
                   return null;
                 }
+
+                // Déterminer si c'est une réponse anonyme
+                const isAnonymous = response.anonymous || !response.user;
 
                 return (
                   <Link 
@@ -55,11 +58,13 @@ export function RecentResponses({ responses, isLoading }: RecentResponsesProps) 
                     <div className="flex items-center space-x-4 rounded-lg p-3 transition-colors hover:bg-muted">
                       <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
                         <span className="text-lg font-semibold text-primary">
-                          {response.user.name[0].toUpperCase()}
+                          {isAnonymous ? "?" : response.user!.name[0].toUpperCase()}
                         </span>
                       </div>
                       <div>
-                        <p className="font-medium">{response.user.name}</p>
+                        <p className="font-medium">
+                          {isAnonymous ? "Utilisateur anonyme" : response.user!.name}
+                        </p>
                         <p className="text-sm text-muted-foreground">
                           a répondu à {response.survey.name} • {format(new Date(response.created_at), "PPP 'à' HH:mm", { locale: fr })}
                         </p>

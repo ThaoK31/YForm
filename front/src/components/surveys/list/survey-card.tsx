@@ -15,12 +15,17 @@ import {
 } from "@/components/ui/alert-dialog"
 
 interface SurveyCardProps {
-  survey: SurveyResponse & { responseCount?: number }
+  survey: SurveyResponse & { 
+    responseCount?: number;
+    userResponseId?: string | null;
+  }
   onDelete: (id: string) => Promise<void>
   onCopyLink: (id: string) => void
 }
 
 export function SurveyCard({ survey, onDelete, onCopyLink }: SurveyCardProps) {
+  const hasResponded = Boolean(survey.userResponseId)
+
   return (
     <div className="block p-4 rounded-lg border hover:bg-accent transition-colors">
       <div className="flex justify-between items-center">
@@ -75,7 +80,7 @@ export function SurveyCard({ survey, onDelete, onCopyLink }: SurveyCardProps) {
         <div className="space-x-2">
           <Button variant="secondary" asChild>
             <Link href={`/surveys/${survey._id}/respond`}>
-              Répondre
+              {hasResponded ? "Modifier la réponse" : "Répondre"}
             </Link>
           </Button>
           <Button variant="outline" onClick={() => onCopyLink(survey._id)}>

@@ -12,6 +12,7 @@ import { Separator } from "@/components/ui/separator"
 import { format } from "date-fns"
 import { fr } from "date-fns/locale"
 import Cookies from "js-cookie"
+import { User } from "lucide-react"
 
 export default function ResponsesPage() {
   const params = useParams()
@@ -63,7 +64,8 @@ export default function ResponsesPage() {
         const enrichedResponses = responsesResult.data.map(response => ({
           _id: response._id,
           survey: response.survey_id,
-          user: response.user_id,
+          user: response.user_id || null,
+          anonymous: response.anonymous,
           answers: response.answers.map(answer => {
             const question = response.survey_id.questions.find(q => q._id === answer.question_id)
             if (!question) return null
@@ -131,7 +133,14 @@ export default function ResponsesPage() {
             <Card key={response._id}>
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
-                  <span>{response.user.name}</span>
+                  <span>
+                    {response.user ? response.user.name : (
+                      <span className="flex items-center text-muted-foreground">
+                        <User className="mr-2 text-muted-foreground h-4 w-4" />
+                        Réponse anonyme
+                      </span>
+                    )}
+                  </span>
                   <span className="text-sm text-muted-foreground">
                     {format(new Date(response.created_at), "PPP 'à' HH:mm", { locale: fr })}
                   </span>

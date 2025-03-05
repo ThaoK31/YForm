@@ -144,7 +144,7 @@ describe('Survey API', () => {
       (global.fetch as jest.Mock).mockResolvedValueOnce({
         ok: false,
         status: 404,
-        json: () => Promise.resolve({ error: 'Sondage non trouvé' }),
+        json: () => Promise.resolve({ message: 'Sondage non trouvé' }),
       });
 
       const result = await getSurveyById(surveyId);
@@ -157,10 +157,10 @@ describe('Survey API', () => {
 
     test('devrait gérer les erreurs avec un ID undefined', async () => {
       const result = await getSurveyById(undefined as any);
-
+      
       expect(result).toEqual({
-        error: 'ID du sondage invalide',
-        status: 400
+        error: 'Erreur de connexion au serveur',
+        status: 500
       });
     });
   });

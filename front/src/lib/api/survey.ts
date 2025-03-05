@@ -55,20 +55,32 @@ export async function getUserSurveys(): Promise<ApiResponse<SurveyResponse[]>> {
   return handleApiResponse<SurveyResponse[]>(response)
 }
 
-export async function getSurveyById(id: string): Promise<ApiResponse<SurveyResponse>> {
-  if (!id) {
-    return {
-      error: 'ID du sondage invalide',
-      status: 400
-    };
-  }
+export const getSurveyById = async (surveyId: string): Promise<ApiResponse<SurveyResponse>> => {
+    try {
+        const response = await fetch(`${API_URL}/api/surveys/${surveyId}`, {
+            credentials: 'include'
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            return {
+                error: errorData.message || 'Erreur lors de la récupération du sondage',
+                status: response.status
+            };
+        }
 
-  const response = await fetch(`${API_URL}/api/surveys/${id}`, {
-    credentials: 'include',
-    })
-
-  return handleApiResponse<SurveyResponse>(response)
+        const data = await response.json();
+        return {
+            data,
+            status: response.status
+        };
+    } catch (error) {
+        return {
+            error: 'Erreur de connexion au serveur',
+            status: 500
+        };
     }
+};
 
 export async function updateSurvey(id: string, data: UpdateSurveyData): Promise<ApiResponse<SurveyResponse>> {
   const token = Cookies.get('token')

@@ -68,4 +68,49 @@ export const getCurrentUser = async (userId) => {
             email: user.email
         }
     };
+};
+
+export const updateUser = async (userId, updates) => {
+    const user = await User.findById(userId);
+    if (!user) {
+        throw new ApiError(404, 'Utilisateur non trouvé');
+    }
+
+    // Vérifier si l'email est déjà utilisé
+    if (updates.email && updates.email !== user.email) {
+        const existingUser = await User.findOne({ email: updates.email });
+        if (existingUser) {
+            throw new ApiError(400, 'Cet email est déjà utilisé');
+        }
+    }
+
+    // Vérifier si le nom d'utilisateur est déjà utilisé
+    if (updates.name && updates.name !== user.name) {
+        const existingUser = await User.findOne({ name: updates.name });
+        if (existingUser) {
+            throw new ApiError(400, 'Ce nom d\'utilisateur est déjà utilisé');
+        }
+    }
+
+    // Si le mot de passe doit être mis à jour
+    if (updates.newPassword) {
+        // Vérifier l'ancien mot de passe
+        const validPassword = await user.comparePassword(updates.currentPassword);
+        if (!validPassword) {
+            throw new ApiError(401, 'Mot de passe actuel incorrect');
+        }
+        user.password = updates.newPassword;
+    }
+
+    // Mettre à jour les autres champs
+    if (updates.name) user.name = updates.name;
+    if (updates.email) user.email = updates.email;
+
+    await user.save();
+
+    return {
+        id: user._id,
+        name: user.name,
+        email: user.email
+    };
 }; 

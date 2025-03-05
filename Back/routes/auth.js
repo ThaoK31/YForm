@@ -1,6 +1,6 @@
 import express from 'express';
 import { auth } from '../middleware/auth.js';
-import { register, login, getCurrentUser } from '../controllers/authController.js';
+import { register, login, getCurrentUser, updateUser } from '../controllers/authController.js';
 
 const router = express.Router();
 
@@ -18,6 +18,11 @@ router.post('/login', login);
 // Description: Obtenir l'utilisateur connecté
 // Accès: Privé
 router.get('/me', auth, getCurrentUser);
+
+// Route: PUT /api/auth/me
+// Description: Mettre à jour le profil de l'utilisateur
+// Accès: Privé
+router.put('/me', auth, updateUser);
 
 // Route: POST /api/auth/logout
 // Description: Déconnexion (côté client uniquement)

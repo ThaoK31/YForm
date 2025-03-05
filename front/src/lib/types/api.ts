@@ -42,6 +42,7 @@ export interface Question {
     text: string;
     type: "open" | "mcq" | "yes/no";
     options: string[];  // Options pour les questions MCQ
+    order?: number;     // Ordre de la question
 }
 
 // Types liés aux sondages
@@ -67,7 +68,8 @@ export interface SurveyAnswer {
 export interface RawResponseData {
     _id: string;
     survey_id: SurveyResponse;
-    user_id: UserResponse;
+    user_id?: UserResponse;
+    anonymous?: boolean;
     answers: SurveyAnswer[];
     created_at: string;
 }
@@ -75,7 +77,8 @@ export interface RawResponseData {
 export interface ResponseData {
     _id: string;
     survey_id: string;
-    user_id: string;
+    user_id?: string;
+    anonymous?: boolean;
     answers: SurveyAnswer[];
     created_at: string;
 }
@@ -88,10 +91,8 @@ export interface EnrichedSurveyAnswer extends Omit<SurveyAnswer, 'question_id'> 
 export interface EnrichedResponseData {
     _id: string;
     survey: SurveyResponse;
-    user: UserResponse;
-    answers: {
-        question: Question;
-        value: string;
-    }[];
+    user: UserResponse | null;
+    anonymous?: boolean;
+    answers: EnrichedSurveyAnswer[];
     created_at: string;
 } 

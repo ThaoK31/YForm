@@ -61,7 +61,7 @@ describe('Auth API Tests', () => {
                 });
 
             expect(res.status).toBe(400);
-            expect(res.body.message).toContain('requis');
+            expect(res.body.error).toContain('requis');
         });
 
         test('devrait retourner une erreur 400 si l\'email est manquant', async () => {
@@ -73,7 +73,7 @@ describe('Auth API Tests', () => {
                 });
 
             expect(res.status).toBe(400);
-            expect(res.body.message).toContain('requis');
+            expect(res.body.error).toContain('requis');
         });
 
         test('devrait retourner une erreur 400 si le mot de passe est manquant', async () => {
@@ -85,7 +85,7 @@ describe('Auth API Tests', () => {
                 });
 
             expect(res.status).toBe(400);
-            expect(res.body.message).toContain('requis');
+            expect(res.body.error).toContain('requis');
         });
 
         test('devrait retourner une erreur si l\'email existe déjà', async () => {
@@ -97,8 +97,8 @@ describe('Auth API Tests', () => {
                     password: 'password123'
                 });
 
-            expect(res.status).toBe(400);
-            expect(res.body.message).toContain('déjà utilisé');
+            expect(res.status).toBe(409);
+            expect(res.body.error).toContain('déjà utilisé');
         });
 
         test('devrait retourner une erreur si l\'email n\'est pas valide', async () => {
@@ -111,7 +111,7 @@ describe('Auth API Tests', () => {
                 });
 
             expect(res.status).toBe(400);
-            expect(res.body.message).toContain('email');
+            expect(res.body.error).toContain('validation');
         });
     });
 
@@ -140,7 +140,7 @@ describe('Auth API Tests', () => {
                 });
 
             expect(res.status).toBe(401);
-            expect(res.body.message).toBe('Identifiants invalides');
+            expect(res.body.error).toBe('Identifiants invalides');
         });
 
         test('devrait refuser la connexion avec un mot de passe incorrect', async () => {
@@ -152,7 +152,7 @@ describe('Auth API Tests', () => {
                 });
 
             expect(res.status).toBe(401);
-            expect(res.body.message).toBe('Identifiants invalides');
+            expect(res.body.error).toBe('Identifiants invalides');
         });
 
         test('devrait retourner une erreur 400 si l\'email est manquant', async () => {
@@ -163,7 +163,7 @@ describe('Auth API Tests', () => {
                 });
 
             expect(res.status).toBe(400);
-            expect(res.body.message).toContain('requis');
+            expect(res.body.error).toContain('requis');
         });
 
         test('devrait retourner une erreur 400 si le mot de passe est manquant', async () => {
@@ -174,7 +174,7 @@ describe('Auth API Tests', () => {
                 });
 
             expect(res.status).toBe(400);
-            expect(res.body.message).toContain('requis');
+            expect(res.body.error).toContain('requis');
         });
     });
 
@@ -196,7 +196,7 @@ describe('Auth API Tests', () => {
                 .get('/api/auth/me');
 
             expect(res.status).toBe(401);
-            expect(res.body.message).toContain('Token manquant');
+            expect(res.body.message).toBe('Token manquant');
         });
 
         test('devrait retourner 401 avec un token invalide', async () => {
@@ -205,7 +205,7 @@ describe('Auth API Tests', () => {
                 .set('Authorization', 'Bearer invalid_token');
 
             expect(res.status).toBe(401);
-            expect(res.body.message).toContain('Token invalide');
+            expect(res.body.message).toBe('Token invalide');
         });
 
         test('devrait retourner 401 avec un token mal formaté', async () => {
@@ -214,7 +214,7 @@ describe('Auth API Tests', () => {
                 .set('Authorization', 'invalid_format');
 
             expect(res.status).toBe(401);
-            expect(res.body.message).toContain('Token manquant');
+            expect(res.body.message).toBe('Token manquant');
         });
     });
 });

@@ -20,7 +20,22 @@ jest.mock("sonner", () => ({
     success: jest.fn()
   }
 }))
-jest.mock("lucide-react")
+
+// Mock les composants lucide-react
+jest.mock("lucide-react", () => ({
+  PlusCircle: () => <div data-testid="plus-icon"></div>,
+  Trash2: () => <div data-testid="trash-icon"></div>,
+  Image: () => <div data-testid="image-icon"></div>,
+  Type: () => <div data-testid="type-icon"></div>,
+  FileText: () => <div data-testid="file-icon"></div>,
+  Video: () => <div data-testid="video-icon"></div>,
+  Copy: () => <div data-testid="copy-icon"></div>,
+  MoreVertical: () => <div data-testid="more-icon"></div>,
+  GripVertical: () => <div data-testid="grip-icon"></div>,
+  ChevronDown: () => <div data-testid="chevron-down-icon"></div>,
+  ChevronUp: () => <div data-testid="chevron-up-icon"></div>,
+  Check: () => <div data-testid="check-icon"></div>
+}))
 
 describe("SurveyForm", () => {  
   const mockRouter = {
@@ -101,7 +116,7 @@ describe("SurveyForm", () => {
     await waitFor(() => {
       expect(mockCreateSurvey).toHaveBeenCalledWith({
         name: "Mon sondage",
-        questions: [{ text: "Ma question", type: "open", options: [] }]
+        questions: [{ text: "Ma question", type: "open", options: [], order: 1 }]
       })
       expect(mockRouter.push).toHaveBeenCalledWith("/surveys/survey123")
       expect(toast.success).toHaveBeenCalledWith("Sondage créé avec succès")

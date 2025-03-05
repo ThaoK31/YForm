@@ -5,7 +5,10 @@ import { SurveyResponse } from "@/lib/types/api"
 import { SurveyList } from "@/components/surveys/list"
 
 interface RecentSurveysProps {
-  surveys: SurveyResponse[]
+  surveys: (SurveyResponse & { 
+    responseCount?: number;
+    userResponseId?: string | null;
+  })[]
   isLoading: boolean
   onDelete: (id: string) => Promise<void>
   onCopyLink: (id: string) => void

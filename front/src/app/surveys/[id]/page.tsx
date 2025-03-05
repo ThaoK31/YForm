@@ -32,7 +32,6 @@ export default function SurveyDetailPage() {
 
   const copyResponseLink = () => {
     if (!survey?._id) {
-      console.error("ID du sondage manquant")
       toast({
         title: "Erreur",
         description: "Impossible de copier le lien : ID du sondage manquant",
@@ -43,14 +42,12 @@ export default function SurveyDetailPage() {
 
     try {
       const link = `${window.location.origin}/surveys/${survey._id}/respond`
-      console.log("Lien généré :", link)
       navigator.clipboard.writeText(link)
       toast({
         title: "Succès",
         description: "Lien de réponse copié !",
       })
     } catch (error) {
-      console.error("Erreur lors de la copie du lien :", error)
       toast({
         title: "Erreur",
         description: "Impossible de copier le lien",

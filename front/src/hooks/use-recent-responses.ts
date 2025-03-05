@@ -37,7 +37,6 @@ export function useRecentResponses() {
                             const enrichedAnswers: EnrichedSurveyAnswer[] = response.answers.map(answer => {
                                 const question = response.survey_id.questions.find(q => q._id === answer.question_id)
                                 if (!question) {
-                                    console.warn('Question non trouvée:', answer.question_id)
                                     return null
                                 }
                                 return {
@@ -49,7 +48,8 @@ export function useRecentResponses() {
                             return {
                                 _id: response._id,
                                 survey: response.survey_id,
-                                user: response.user_id,
+                                user: response.user_id || null,
+                                anonymous: response.anonymous,
                                 answers: enrichedAnswers,
                                 created_at: response.created_at
                             }
@@ -57,10 +57,11 @@ export function useRecentResponses() {
 
                         // Vérifier que chaque réponse a les données nécessaires
                         const validResponses = transformedResponses.filter(response => {
-                            const isValid = response && response.survey && response.user && 
-                                          response.survey._id && response.user.name;
+                            // Vérifier que la réponse est valide (anonyme ou avec un utilisateur)
+                            const isValid = response && response.survey && response.survey._id && (
+                                response.anonymous || (response.user && response.user.name)
+                            );
                             if (!isValid) {
-                                console.warn('Réponse invalide reçue:', response);
                             }
                             return isValid;
                         });

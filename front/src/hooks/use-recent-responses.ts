@@ -37,7 +37,6 @@ export function useRecentResponses() {
                             const enrichedAnswers: EnrichedSurveyAnswer[] = response.answers.map(answer => {
                                 const question = response.survey_id.questions.find(q => q._id === answer.question_id)
                                 if (!question) {
-                                    console.warn('Question non trouvée:', answer.question_id)
                                     return null
                                 }
                                 return {
@@ -63,7 +62,6 @@ export function useRecentResponses() {
                                 response.anonymous || (response.user && response.user.name)
                             );
                             if (!isValid) {
-                                console.warn('Réponse invalide reçue:', response);
                             }
                             return isValid;
                         });

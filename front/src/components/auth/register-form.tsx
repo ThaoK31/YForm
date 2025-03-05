@@ -57,7 +57,11 @@ export function RegisterForm() {
     setIsLoading(true)
 
     try {
-      const response = await registerApi(values.name, values.email, values.password)
+      const response = await registerApi({
+        name: values.name,
+        email: values.email,
+        password: values.password
+      })
       
       if (response.error) {
         if (isApiError(response.error)) {

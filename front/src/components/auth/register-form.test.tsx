@@ -1,7 +1,7 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { RegisterForm } from './register-form'
 import { useRouter } from 'next/navigation'
-import { toast } from 'sonner'
+import { toast } from '@/hooks/use-toast'
 import { register } from '@/lib/api/auth'
 
 // Mock des dépendances
@@ -10,7 +10,9 @@ jest.mock('next/navigation', () => ({
     push: jest.fn(),
   })),
 }))
-jest.mock('sonner')
+jest.mock('@/hooks/use-toast', () => ({
+  toast: jest.fn()
+}))
 jest.mock('@/lib/api/auth')
 jest.mock('lucide-react', () => ({
   User: () => <span data-testid="user-icon" />,
@@ -115,8 +117,15 @@ describe('RegisterForm', () => {
     fireEvent.click(submitButton)
 
     await waitFor(() => {
-      expect(mockRegister).toHaveBeenCalledWith('John Doe', 'test@example.com', 'password123')
-      expect(toast.success).toHaveBeenCalledWith('Inscription réussie')
+      expect(mockRegister).toHaveBeenCalledWith({
+        name: 'John Doe',
+        email: 'test@example.com',
+        password: 'password123'
+      })
+      expect(toast).toHaveBeenCalledWith({
+        title: "Succès",
+        description: 'Inscription réussie'
+      })
       expect(mockPush).toHaveBeenCalledWith('/login')
     })
   })
@@ -141,7 +150,11 @@ describe('RegisterForm', () => {
     fireEvent.click(submitButton)
 
     await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith('Cette adresse email est déjà utilisée')
+      expect(toast).toHaveBeenCalledWith({
+        variant: "destructive",
+        title: "Erreur",
+        description: 'Cette adresse email est déjà utilisée'
+      })
       expect(mockPush).not.toHaveBeenCalled()
     })
   })

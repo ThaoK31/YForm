@@ -20,7 +20,7 @@ export function QuestionOptions({ form, index }: QuestionOptionsProps) {
 
   const addOption = () => {
     const currentOptions = form.getValues(`questions.${index}.options`) as string[]
-    form.setValue(`questions.${index}.options`, [...currentOptions, `Option ${currentOptions.length + 1}`])
+    form.setValue(`questions.${index}.options`, [...currentOptions, ""])
   }
 
   const removeOption = (optionIndex: number) => {
@@ -41,7 +41,7 @@ export function QuestionOptions({ form, index }: QuestionOptionsProps) {
             render={({ field }) => (
               <FormItem className="flex-1">
                 <FormControl>
-                  <Input {...field} />
+                  <Input {...field} placeholder={`Option ${optionIndex + 1}`} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

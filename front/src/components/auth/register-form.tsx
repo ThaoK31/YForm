@@ -6,6 +6,9 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
 import { Eye, EyeOff, Mail, Lock, User } from "lucide-react"
+import { toast } from "@/hooks/use-toast"
+import { register as registerApi } from "@/lib/api/auth"
+import { isApiError } from "@/lib/utils"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -17,9 +20,6 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { toast } from "sonner"
-import { register as registerApi } from "@/lib/api/auth"
-import { isApiError } from "@/lib/utils"
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -65,17 +65,32 @@ export function RegisterForm() {
       
       if (response.error) {
         if (isApiError(response.error)) {
-          toast.error(response.error.error)
+          toast({
+            variant: "destructive",
+            title: "Erreur",
+            description: response.error.error
+          })
         } else {
-          toast.error("Une erreur est survenue lors de l'inscription")
+          toast({
+            variant: "destructive",
+            title: "Erreur",
+            description: "Une erreur est survenue lors de l'inscription"
+          })
         }
         return
       }
 
-      toast.success("Inscription réussie")
+      toast({
+        title: "Succès",
+        description: "Inscription réussie"
+      })
       router.push("/login")
     } catch (error) {
-      toast.error("Une erreur est survenue lors de l'inscription")
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Une erreur est survenue lors de l'inscription"
+      })
     } finally {
       setIsLoading(false)
     }

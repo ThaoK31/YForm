@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { toast } from 'sonner'
+import { toast } from '@/hooks/use-toast'
 import Cookies from 'js-cookie'
 
 import { getSurveyResponses } from '@/lib/api/responses'
@@ -15,14 +15,22 @@ export function useRecentResponses() {
             try {
                 const token = Cookies.get('token')
                 if (!token) {
-                    toast.error('Vous devez être connecté pour voir les réponses')
+                    toast({
+                        variant: "destructive",
+                        title: "Erreur",
+                        description: 'Vous devez être connecté pour voir les réponses'
+                    })
                     return
                 }
 
                 // 1. Récupérer tous les sondages de l'utilisateur
                 const surveysResult = await getUserSurveys()
                 if (surveysResult.error || !surveysResult.data) {
-                    toast.error(surveysResult.error || 'Impossible de récupérer vos sondages')
+                    toast({
+                        variant: "destructive",
+                        title: "Erreur",
+                        description: surveysResult.error || 'Impossible de récupérer vos sondages'
+                    })
                     return
                 }
 
@@ -77,7 +85,11 @@ export function useRecentResponses() {
                 setResponses(sortedResponses)
             } catch (error) {
                 console.error('Erreur lors de la récupération des réponses:', error)
-                toast.error('Une erreur est survenue lors de la récupération des réponses')
+                toast({
+                    variant: "destructive",
+                    title: "Erreur",
+                    description: 'Une erreur est survenue lors de la récupération des réponses'
+                })
             } finally {
                 setIsLoading(false)
             }

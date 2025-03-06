@@ -115,9 +115,6 @@ export function QuestionList({ form }: QuestionListProps) {
       activationConstraint: {
         distance: 8,
       },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
     })
   )
   
@@ -179,7 +176,24 @@ export function QuestionList({ form }: QuestionListProps) {
         >
           {fields.map((field, index) => (
             <SortableItem key={field.id} id={field.id}>
-              <div className="h-full">
+              <div 
+                className="h-full"
+                // Empêcher le drag quand on clique sur des champs de texte
+                onPointerDown={(e) => {
+                  const target = e.target as HTMLElement;
+                  // Si on clique sur un input ou textarea, empêcher le déclenchement du drag
+                  if (
+                    target.tagName === 'INPUT' || 
+                    target.tagName === 'TEXTAREA' || 
+                    target.isContentEditable ||
+                    target.closest('input') || 
+                    target.closest('textarea')
+                  ) {
+                    // Empêcher la propagation de l'événement pour éviter de déclencher le drag
+                    e.stopPropagation();
+                  }
+                }}
+              >
                 <QuestionCard
                   form={form}
                   index={index}

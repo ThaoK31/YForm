@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation"
 import { useEffect } from "react"
 import { User } from "@/lib/types/user"
-import { toast } from "sonner"
+import { toast } from "@/hooks/use-toast"
 import Cookies from 'js-cookie'
 import { create } from 'zustand'
 
@@ -104,13 +104,24 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       })
       
       setUser(formatUser(user))
-      toast.success('Connexion réussie')
+      toast({
+        title: "Succès",
+        description: 'Connexion réussie'
+      })
     } catch (error) {
       setUser(null)
       if (error instanceof Error) {
-        toast.error(error.message)
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: error.message
+        })
       } else {
-        toast.error('Erreur lors de la connexion')
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: 'Erreur lors de la connexion'
+        })
       }
       throw error
     } finally {
@@ -143,13 +154,24 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       })
 
       setUser(formatUser(user))
-      toast.success('Inscription réussie')
+      toast({
+        title: "Succès",
+        description: 'Inscription réussie'
+      })
     } catch (error) {
       setUser(null)
       if (error instanceof Error) {
-        toast.error(error.message)
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: error.message
+        })
       } else {
-        toast.error('Erreur lors de l\'inscription')
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: 'Erreur lors de l\'inscription'
+        })
       }
       throw error
     } finally {
@@ -163,12 +185,19 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       setLoading(true)
       await fetch(`${API_URL}/api/auth/logout`, { method: 'POST' })
     } catch (error) {
-      toast.error('Erreur lors de la déconnexion')
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: 'Erreur lors de la déconnexion'
+      })
     } finally {
       Cookies.remove('token')
       setUser(null)
       setLoading(false)
-      toast.success('Déconnexion réussie')
+      toast({
+        title: "Succès",
+        description: 'Déconnexion réussie'
+      })
     }
   }
 }))

@@ -31,7 +31,7 @@ interface QuestionCardProps {
 export function QuestionCard({ form, index, onRemove, onAdd, onDuplicate }: QuestionCardProps) {
   const handleTypeChange = (value: QuestionType) => {
     if (value === "mcq" && form.getValues(`questions.${index}.options`).length === 0) {
-      form.setValue(`questions.${index}.options`, ["Option 1"])
+      form.setValue(`questions.${index}.options`, ["", "", ""])
     } else if (value === "yes/no" || value === "open") {
       form.setValue(`questions.${index}.options`, [])
     }

@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-import { toast } from "sonner"
+import { toast } from "@/hooks/use-toast"
 
 import { Form } from "@/components/ui/form"
 import { Button } from "@/components/ui/button"
@@ -57,7 +57,11 @@ export function SurveyForm({ initialData, onCancel, mode = "create" }: SurveyFor
   async function onSubmit(values: FormValues) {
     try {
       if (!user) {
-        toast.error("Vous devez être connecté pour créer un sondage")
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Vous devez être connecté pour créer un sondage"
+        })
         return
       }
 
@@ -76,23 +80,34 @@ export function SurveyForm({ initialData, onCancel, mode = "create" }: SurveyFor
         : await updateSurvey(initialData?._id || "", surveyData)
       
       if (response.error) {
-        toast.error(response.error)
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: response.error
+        })
         return
       }
 
       if (!response.data) {
-        toast.error(`Une erreur est survenue lors de la ${mode === "create" ? "création" : "modification"} du sondage`)
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: `Une erreur est survenue lors de la ${mode === "create" ? "création" : "modification"} du sondage`
+        })
         return
       }
 
-      toast.success(mode === "create" ? "Sondage créé avec succès" : "Sondage modifié avec succès")
+      toast({
+        title: "Succès",
+        description: mode === "create" ? "Sondage créé avec succès" : "Sondage modifié avec succès"
+      })
       router.push(`/surveys/${response.data._id}`)
-    } catch (error) {
-      if (error instanceof Error) {
-        toast.error(`Erreur: ${error.message}`)
-      } else {
-        toast.error(`Une erreur inattendue est survenue lors de la ${mode === "create" ? "création" : "modification"} du sondage`)
-      }
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: `Erreur: ${error.message || 'Une erreur inattendue est survenue'}`
+      })
     }
   }
 

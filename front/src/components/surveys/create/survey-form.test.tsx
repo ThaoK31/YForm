@@ -3,7 +3,7 @@ import { SurveyForm } from "./survey-form"
 import { createSurvey } from "@/lib/api/survey"
 import { useAuth } from "@/hooks/use-auth"
 import { useRouter } from "next/navigation"
-import { toast } from "sonner"
+import { toast } from "@/hooks/use-toast"
 import { RawSurveyResponse } from "@/lib/types/api"
 
 // Mocks
@@ -14,11 +14,8 @@ jest.mock("@/hooks/use-auth", () => ({
 jest.mock("next/navigation", () => ({
   useRouter: jest.fn()
 }))
-jest.mock("sonner", () => ({
-  toast: {
-    error: jest.fn(),
-    success: jest.fn()
-  }
+jest.mock("@/hooks/use-toast", () => ({
+  toast: jest.fn()
 }))
 
 // Mock les composants lucide-react
@@ -119,7 +116,10 @@ describe("SurveyForm", () => {
         questions: [{ text: "Ma question", type: "open", options: [], order: 1 }]
       })
       expect(mockRouter.push).toHaveBeenCalledWith("/surveys/survey123")
-      expect(toast.success).toHaveBeenCalledWith("Sondage créé avec succès")
+      expect(toast).toHaveBeenCalledWith({
+        title: "Succès",
+        description: "Sondage créé avec succès"
+      })
     })
   })
 
@@ -139,7 +139,11 @@ describe("SurveyForm", () => {
     fireEvent.click(screen.getByText("Publier le sondage"))
     
     await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith("Vous devez être connecté pour créer un sondage")
+      expect(toast).toHaveBeenCalledWith({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Vous devez être connecté pour créer un sondage"
+      })
     })
   })
 
@@ -163,7 +167,11 @@ describe("SurveyForm", () => {
     fireEvent.click(screen.getByText("Publier le sondage"))
     
     await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith("Erreur serveur")
+      expect(toast).toHaveBeenCalledWith({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Erreur serveur"
+      })
     })
   })
 }) 

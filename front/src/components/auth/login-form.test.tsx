@@ -2,7 +2,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { LoginForm } from './login-form'
 import { useAuth } from '@/hooks/use-auth'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { toast } from 'sonner'
+import { toast } from '@/hooks/use-toast'
 
 // Mock des dépendances
 jest.mock('@/hooks/use-auth')
@@ -12,7 +12,9 @@ jest.mock('next/navigation', () => ({
   })),
   useSearchParams: jest.fn()
 }))
-jest.mock('sonner')
+jest.mock('@/hooks/use-toast', () => ({
+  toast: jest.fn()
+}))
 jest.mock('lucide-react', () => ({
   MailIcon: () => <span data-testid="mail-icon" />,
   LockIcon: () => <span data-testid="lock-icon" />,
@@ -88,7 +90,10 @@ describe('LoginForm', () => {
         email: 'test@example.com',
         password: 'password123',
       })
-      expect(toast.success).toHaveBeenCalledWith('Connexion réussie')
+      expect(toast).toHaveBeenCalledWith({
+        title: "Succès",
+        description: 'Connexion réussie'
+      })
       expect(mockPush).toHaveBeenCalledWith('/dashboard')
     })
   })
@@ -107,7 +112,11 @@ describe('LoginForm', () => {
     fireEvent.click(submitButton)
 
     await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith('Une erreur est survenue lors de la connexion')
+      expect(toast).toHaveBeenCalledWith({
+        variant: "destructive",
+        title: "Erreur",
+        description: 'Une erreur est survenue lors de la connexion'
+      })
     })
   })
 
